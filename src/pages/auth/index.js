@@ -1,21 +1,28 @@
 import { useState } from "react"
-import axios from '@/lib/axios'
 import {
     Box, Button, Container, CssBaseline, Grid, Link, Paper, TextField, Typography
 } from "@mui/material";
+import { useAuth } from "@/hooks/auth";
+import { useRouter } from "next/router";
 
 export default function Login() {
+    const router = useRouter()
 
-    const csrf = () => axios.get('/sanctum/csrf-cookie')
-
+    const { login } = useAuth({
+        middleware: 'guest',
+        redirectIfAuthenticated: '/dashboard',
+    })
+    // const data = new FormData(event.currentTarget);
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [errors, setErrors] = useState([])
     const handleLogin = async (event) => {
         event.preventDefault();
-        
-        const data = new FormData(event.currentTarget);
-        await csrf()
-        axios.post('/api/auth/login', data)
-            .then(response => console.log(response))
-            .catch(error => console.error(error))
+        login({
+            email,
+            password,
+            setErrors,
+        })
     }
 
     return (
@@ -75,6 +82,7 @@ export default function Login() {
                                     name="email"
                                     autoComplete="email"
                                     autoFocus
+                                       onChange={event => setEmail(event.target.value)}
                                 />
                                 <TextField
                                     margin="normal"
@@ -85,6 +93,7 @@ export default function Login() {
                                     type="password"
                                     id="password"
                                     autoComplete="current-password"
+                                    onChange={event => setPassword(event.target.value)}
                                 />
 
                                 <Button
