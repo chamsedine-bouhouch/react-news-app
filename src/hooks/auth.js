@@ -1,15 +1,15 @@
 import { useEffect } from 'react'
 import useSWR from 'swr'
-import axios from '@/lib/axios'
+import axiosInstance from '@/lib/axios'
 import { useRouter } from 'next/router'
 
 export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
 
     const router = useRouter()
 
-    const { data: user, error, mutate } = useSWR('/api/user', () =>
-        axios
-            .get('/api/user')
+    const { data: user, error, mutate } = useSWR('/api/auth/user', () =>
+        axiosInstance
+            .get('/api/auth/user')
             .then(res => res.data)
             .catch(error => {
                 // if (error.response.status !== 409) throw error
@@ -19,7 +19,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
     )
 
 
-    const csrf = () => axios.get('/sanctum/csrf-cookie')
+    const csrf = () => axiosInstance.get('/sanctum/csrf-cookie')
 
 
 
@@ -28,18 +28,19 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
 
         setErrors([])
 
-
-        axios
+        axiosInstance
             .post('/api/auth/login', props)
-            .then(() => mutate())
-            .catch(error => {
+            .then((response) => {
+                mutate()
+                localStorage.setItem("accessToken", response.data.accessToken)
+            }).catch(error => {
                 console.log(error)
             })
     }
 
     const logout = async () => {
         if (!error) {
-            await axios.post('/api/auth/logout').then(() => mutate())
+            await axiosInstance.post('/api/auth/logout').then(() => mutate())
         }
 
         window.location.pathname = '/auth'
@@ -51,7 +52,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
         //     window.location.pathname === '/verify-email' &&
         //     user?.email_verified_at
         // )
-            // router.push(redirectIfAuthenticated)
+        // router.push(redirectIfAuthenticated)
         if (middleware === 'auth' && error) logout()
     }, [user, error])
 
