@@ -3,7 +3,7 @@ import styles from '../../styles/Home.module.css';
 import { Button } from '@mui/material';
 import { useAuth } from '@/hooks/auth';
 import Link from 'next/link';
-import Layout from '@/components/Layout';
+import Layout from '@/components/Layouts/AppLayout';
 
 export default function Home() {
   const { user } = useAuth({ middleware: 'guest' })
